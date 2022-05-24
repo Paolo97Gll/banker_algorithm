@@ -1,6 +1,7 @@
 .vscode/
 other/
 *.x
+main
 
 # Prerequisites
 *.d
