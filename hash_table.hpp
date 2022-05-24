@@ -196,7 +196,7 @@ void HashTable<TValue>::remove(const std::uint32_t &key)
                 current_item->next->prev = current_item->prev;
                 delete current_item;
             }
-            --count;
+            --_count;
             _remove_key_from_list(key);
             return;
         }
