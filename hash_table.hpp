@@ -72,7 +72,7 @@ template <typename T>
 void HashTable<T>::insert(const std::uint32_t &key, const T &value)
 {
     auto &bucket{_items_list[_hash_function(key)]};
-    for (std::uint32_t i{}; i<bucket.length(); ++i)
+    for (std::uint32_t i{}; i < bucket.length(); ++i)
     {
         if (bucket[i].key == key)
         {
@@ -89,7 +89,7 @@ template <typename T>
 void HashTable<T>::remove(const std::uint32_t &key)
 {
     auto &bucket{_items_list[_hash_function(key)]};
-    for (std::uint32_t i{}; i<bucket.length(); ++i)
+    for (std::uint32_t i{}; i < bucket.length(); ++i)
     {
         if (bucket[i].key == key)
         {
@@ -105,7 +105,7 @@ void HashTable<T>::remove(const std::uint32_t &key)
 template <typename T>
 void HashTable<T>::clear()
 {
-    for (std::uint32_t i{}; i<_bucket_capacity; ++i)
+    for (std::uint32_t i{}; i < _bucket_capacity; ++i)
         _items_list[i].clear();
     _keys_list.clear();
     _count = 0;
@@ -115,7 +115,7 @@ template <typename T>
 T &HashTable<T>::operator[](const std::uint32_t &key)
 {
     auto &bucket{_items_list[_hash_function(key)]};
-    for (std::uint32_t i{}; i<bucket.length(); ++i)
+    for (std::uint32_t i{}; i < bucket.length(); ++i)
         if (bucket[i].key == key)
             return bucket[i].value;
     throw std::out_of_range{};
@@ -125,7 +125,7 @@ template <typename T>
 const T &HashTable<T>::operator[](const std::uint32_t &key) const
 {
     auto &bucket{_items_list[_hash_function(key)]};
-    for (std::uint32_t i{}; i<bucket.length(); ++i)
+    for (std::uint32_t i{}; i < bucket.length(); ++i)
         if (bucket[i].key == key)
             return bucket[i].value;
     throw std::out_of_range{};
@@ -135,7 +135,7 @@ template <typename T>
 bool HashTable<T>::contains(const std::uint32_t &key) const
 {
     auto &bucket{_items_list[_hash_function(key)]};
-    for (std::uint32_t i{}; i<bucket.length(); ++i)
+    for (std::uint32_t i{}; i < bucket.length(); ++i)
         if (bucket[i].key == key)
             return true;
     return false;
