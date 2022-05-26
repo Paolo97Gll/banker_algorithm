@@ -1,10 +1,8 @@
 CXX = g++
-CXXFLAGS = -g
-DEPS = hash_table.hpp
-OBJ = main.o hash_table.o
+CXXFLAGS = -g -lpthread
 
-%.o: %.c $(DEPS)
-	$(CXX) -c -o $@ $< $(CXXFLAGS)
-
-main.x: $(OBJ) $(DEPS)
+main.x: main.cpp
 	$(CXX) -o $@ $^ $(CXXFLAGS)
+
+clean:
+	rm -f *.o *.x
