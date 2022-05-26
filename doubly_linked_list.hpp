@@ -41,8 +41,9 @@ public:
 
     T &operator[](const std::uint32_t &index);
     const T &operator[](const std::uint32_t &index) const;
+    bool contains(const T &value) const;
 
-    std::uint32_t length() const;
+    const std::uint32_t &length() const;
 
 private:
     DoublyLinkedListItem<T> *_first_item;
@@ -71,7 +72,7 @@ void DoublyLinkedList<T>::append(const T &value)
     }
     else
     {
-        DoublyLinkedListItem<T> *new_item = new DoublyLinkedListItem<T>{value, _last_item, nullptr};
+        DoublyLinkedListItem<T> *new_item{new DoublyLinkedListItem<T>{value, _last_item, nullptr}};
         _last_item->next = new_item;
         _last_item = new_item;
     }
@@ -113,7 +114,7 @@ void DoublyLinkedList<T>::remove_indexbased(const std::uint32_t &index)
         --_count;
         return;
     }
-    throw std::out_of_range{};
+    throw std::out_of_range{"Index out of range"};
 }
 
 template <typename T>
@@ -156,18 +157,16 @@ void DoublyLinkedList<T>::remove_valuebased(const T &value)
             current_item = current_item->next;
         }
     }
-    throw std::out_of_range{};
+    throw std::out_of_range{"Index out of range"};
 }
 
 template <typename T>
 void DoublyLinkedList<T>::clear()
 {
-    DoublyLinkedListItem<T> *current_item{_first_item};
-    DoublyLinkedListItem<T> *previous_item{};
-    while (current_item)
+    while (_first_item)
     {
-        previous_item = current_item;
-        current_item = current_item->next;
+        DoublyLinkedListItem<T> *previous_item{_first_item};
+        _first_item = _first_item->next;
         delete previous_item;
     }
     _first_item = nullptr;
@@ -183,7 +182,7 @@ T &DoublyLinkedList<T>::operator[](const std::uint32_t &index)
         current_item = current_item->next;
     if (current_item)
         return current_item->value;
-    throw std::out_of_range{};
+    throw std::out_of_range{"Index out of range"};
 }
 
 template <typename T>
@@ -194,11 +193,20 @@ const T &DoublyLinkedList<T>::operator[](const std::uint32_t &index) const
         current_item = current_item->next;
     if (current_item)
         return current_item->value;
-    throw std::out_of_range{};
+    throw std::out_of_range{"Index out of range"};
 }
 
 template <typename T>
-std::uint32_t DoublyLinkedList<T>::length() const
+bool DoublyLinkedList<T>::contains(const T &value) const
+{
+    for (std::uint32_t i{}; i < _count; ++i)
+        if ((*this)[i] == value)
+            return true;
+    return false;
+}
+
+template <typename T>
+const std::uint32_t &DoublyLinkedList<T>::length() const
 {
     return _count;
 }

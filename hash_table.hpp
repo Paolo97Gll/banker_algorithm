@@ -43,8 +43,8 @@ public:
     const T &operator[](const std::uint32_t &key) const;
     bool contains(const std::uint32_t &key) const;
 
-    std::uint32_t length() const;
-    DoublyLinkedList<std::uint32_t> keys() const;
+    const std::uint32_t &length() const;
+    const DoublyLinkedList<std::uint32_t> &keys() const;
 
 private:
     std::uint32_t _hash_function(const std::uint32_t &key) const;
@@ -99,7 +99,7 @@ void HashTable<T>::remove(const std::uint32_t &key)
             return;
         }
     }
-    throw std::out_of_range{};
+    throw std::out_of_range{"Key not found"};
 }
 
 template <typename T>
@@ -118,7 +118,7 @@ T &HashTable<T>::operator[](const std::uint32_t &key)
     for (std::uint32_t i{}; i < bucket.length(); ++i)
         if (bucket[i].key == key)
             return bucket[i].value;
-    throw std::out_of_range{};
+    throw std::out_of_range{"Key not found"};
 }
 
 template <typename T>
@@ -128,7 +128,7 @@ const T &HashTable<T>::operator[](const std::uint32_t &key) const
     for (std::uint32_t i{}; i < bucket.length(); ++i)
         if (bucket[i].key == key)
             return bucket[i].value;
-    throw std::out_of_range{};
+    throw std::out_of_range{"Key not found"};
 }
 
 template <typename T>
@@ -142,13 +142,13 @@ bool HashTable<T>::contains(const std::uint32_t &key) const
 }
 
 template <typename T>
-std::uint32_t HashTable<T>::length() const
+const std::uint32_t &HashTable<T>::length() const
 {
     return _count;
 }
 
 template <typename T>
-DoublyLinkedList<std::uint32_t> HashTable<T>::keys() const
+const DoublyLinkedList<std::uint32_t> &HashTable<T>::keys() const
 {
     return _keys_list;
 }
