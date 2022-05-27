@@ -40,7 +40,7 @@ public:
      * @brief Compare two HashTableItem objects.
      *
      * @param a The second object.
-     * @return `true` if the key is equal, 'false` otherwise.
+     * @return `true` if the key is equal, `false` otherwise.
      */
     bool operator==(const HashTableItem &a) const { return key == a.key; };
 
