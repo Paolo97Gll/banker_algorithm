@@ -1,7 +1,7 @@
 CXX = g++
 CXXFLAGS = -g -lpthread
 
-main.x: main.cpp
+banker_algorithm.x: src/main.cpp
 	$(CXX) -o $@ $^ $(CXXFLAGS)
 
 clean:
