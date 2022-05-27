@@ -22,12 +22,36 @@
 /**
  * @brief Hash table item, to store the key and the value of the element.
  *
- * @tparam T type of the value stored in the table
+ * @tparam T Type of the value stored in the table.
  */
 template <typename T>
-struct HashTableItem
+class HashTableItem
 {
+public:
+    /**
+     * @brief Construct a new HashTableItem object
+     *
+     * @param key Key of the item.
+     * @param value Value of the item.
+     */
+    HashTableItem(const std::uint32_t &key, const T &value = {}) : key{key},
+                                                                   value{value} {};
+    /**
+     * @brief Compare two HashTableItem objects.
+     *
+     * @param a The second object.
+     * @return `true` if the key is equal, 'false` otherwise.
+     */
+    bool operator==(const HashTableItem &a) const { return key == a.key; };
+
+    /**
+     * @brief Key of the item.
+     */
     std::uint32_t key;
+
+    /**
+     * @brief Value of the item.
+     */
     T value;
 };
 
@@ -36,7 +60,7 @@ struct HashTableItem
 /**
  * @brief A simple hash table.
  *
- * @tparam T type of the value stored in the table
+ * @tparam T Type of the value stored in the table.
  */
 template <typename T>
 class HashTable
@@ -44,6 +68,8 @@ class HashTable
 public:
     /**
      * @brief Construct a new HashTable object.
+     *
+     * @param bucket_capacity Capacity of the table bucket list.
      */
     HashTable(const std::uint32_t &bucket_capacity = 65536);
 
@@ -55,15 +81,15 @@ public:
     /**
      * @brief Insert the given element in the table.
      *
-     * @param key the key of the element to insert
-     * @param value the value of the element to insert
+     * @param key The key of the element to insert.
+     * @param value The value of the element to insert.
      */
     void insert(const std::uint32_t &key, const T &value);
 
     /**
      * @brief Remove the element with the specified key from the table.
      *
-     * @param key the key of the element to remove
+     * @param key The key of the element to remove.
      */
     void remove(const std::uint32_t &key);
 
@@ -75,38 +101,38 @@ public:
     /**
      * @brief Access or modify the specified element; no insertion.
      *
-     * @param key the key of the element to find
-     * @return the value of the element at the given key
+     * @param key The key of the element to find.
+     * @return The value of the element at the given key.
      */
     T &operator[](const std::uint32_t &key);
 
     /**
      * @brief Access or modify the specified element; no insertion.
      *
-     * @param key the key of the element to find
-     * @return the value of the element at the given key
+     * @param key The key of the element to find.
+     * @return The value of the element at the given key.
      */
     const T &operator[](const std::uint32_t &key) const;
 
     /**
      * @brief Checks if the table contains the specified key.
      *
-     * @param key key of the element to search for
-     * @return `true` if there is such an element, otherwise `false`
+     * @param key Key of the element to search for.
+     * @return `true` if there is such an element, otherwise `false`.
      */
     bool contains(const std::uint32_t &key) const;
 
     /**
      * @brief Get the number of elements in the table.
      *
-     * @return the length of the table
+     * @return The length of the table.
      */
     const std::uint32_t &length() const;
 
     /**
      * @brief Get the keys list.
      *
-     * @return the list of the keys contained in the table
+     * @return The list of the keys contained in the table.
      */
     const DoublyLinkedList<std::uint32_t> &keys() const;
 
@@ -114,8 +140,8 @@ private:
     /**
      * @brief Hash function, implemented using the Knuth multiplicative algorithm.
      *
-     * @param key the input of the hash function, aka the element key
-     * @return the hashed key
+     * @param key The input of the hash function, aka the element key.
+     * @return The hashed key.
      */
     std::uint32_t _hash_function(const std::uint32_t &key) const;
 
@@ -157,14 +183,10 @@ template <typename T>
 void HashTable<T>::insert(const std::uint32_t &key, const T &value)
 {
     auto &bucket{_items_list[_hash_function(key)]};
-    for (std::uint32_t i{}; i < bucket.length(); ++i)
-    {
-        if (bucket[i].key == key)
-        {
-            bucket[i].value = value;
-            return;
-        }
-    }
+    // check if key is in dictionary
+    if (bucket.contains({key}))
+        throw std::runtime_error{"Cannot insert an already existing key"};
+    // insert element
     bucket.append({key, value});
     _keys_list.append(key);
     ++_count;
@@ -174,17 +196,13 @@ template <typename T>
 void HashTable<T>::remove(const std::uint32_t &key)
 {
     auto &bucket{_items_list[_hash_function(key)]};
-    for (std::uint32_t i{}; i < bucket.length(); ++i)
-    {
-        if (bucket[i].key == key)
-        {
-            bucket.remove_indexbased(i);
-            _keys_list.remove_valuebased(key);
-            --_count;
-            return;
-        }
-    }
-    throw std::out_of_range{"Key not found"};
+    // check if key is in dictionary
+    if (!bucket.contains({key}))
+        throw std::out_of_range{"Key not found"};
+    // remove element
+    bucket.remove_valuebased({key});
+    _keys_list.remove_valuebased(key);
+    --_count;
 }
 
 template <typename T>
@@ -220,10 +238,7 @@ template <typename T>
 bool HashTable<T>::contains(const std::uint32_t &key) const
 {
     auto &bucket{_items_list[_hash_function(key)]};
-    for (std::uint32_t i{}; i < bucket.length(); ++i)
-        if (bucket[i].key == key)
-            return true;
-    return false;
+    return bucket.contains({key});
 }
 
 template <typename T>

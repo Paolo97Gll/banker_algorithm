@@ -21,7 +21,7 @@
  * @brief Doubly linked list item, to store the value and the pointers
  * the the next and the previous item.
  *
- * @tparam T type of the value stored in the list
+ * @tparam T Type of the value stored in the list.
  */
 template <typename T>
 struct DoublyLinkedListItem
@@ -36,7 +36,7 @@ struct DoublyLinkedListItem
 /**
  * @brief A simple doubly linked list.
  *
- * @tparam T type of the value stored in the list
+ * @tparam T Type of the value stored in the list.
  */
 template <typename T>
 class DoublyLinkedList
@@ -55,21 +55,21 @@ public:
     /**
      * @brief Appends the given element value to the end of the list.
      *
-     * @param value the value of the element to append
+     * @param value The value of the element to append.
      */
     void append(const T &value);
 
     /**
      * @brief Remove the element at the specified index from the list.
      *
-     * @param index the index of the element to remove
+     * @param index The index of the element to remove.
      */
     void remove_indexbased(const std::uint32_t &index);
 
     /**
      * @brief Remove the first element of the given value from the list.
      *
-     * @param value the value of the element to remove
+     * @param value The value of the element to remove.
      */
     void remove_valuebased(const T &value);
 
@@ -81,35 +81,41 @@ public:
     /**
      * @brief Access or modify the specified element; no insertion.
      *
-     * @param index the index of the element to find
-     * @return the value of the element at the given index
+     * @param index The index of the element to find.
+     * @return The value of the element at the given index.
      */
     T &operator[](const std::uint32_t &index);
 
     /**
      * @brief Access or modify the specified element; no insertion.
      *
-     * @param index the index of the element to find
-     * @return the value of the element at the given index
+     * @param index The index of the element to find.
+     * @return The value of the element at the given index.
      */
     const T &operator[](const std::uint32_t &index) const;
 
     /**
      * @brief Checks if the list contains the specified element.
      *
-     * @param value value of the element to search for
-     * @return `true` if there is such an element, otherwise `false`
+     * @param value Value of the element to search for.
+     * @return `true` if there is such an element, otherwise `false`.
      */
     bool contains(const T &value) const;
 
     /**
      * @brief Get the number of elements in the list.
      *
-     * @return the length of the list
+     * @return The length of the list.
      */
     const std::uint32_t &length() const;
 
 private:
+    /**
+     * @brief
+     *
+     */
+    void _remove(DoublyLinkedListItem<T> *item);
+
     /**
      * @brief Pointer to the first element of the list.
      */
@@ -140,11 +146,13 @@ DoublyLinkedList<T>::~DoublyLinkedList()
 template <typename T>
 void DoublyLinkedList<T>::append(const T &value)
 {
+    // if no element in the list, allocate a new element
     if (!_last_item)
     {
         _last_item = new DoublyLinkedListItem<T>{value, nullptr, nullptr};
         _first_item = _last_item;
     }
+    // create a new element an change the list links
     else
     {
         DoublyLinkedListItem<T> *new_item{new DoublyLinkedListItem<T>{value, _last_item, nullptr}};
@@ -158,37 +166,12 @@ template <typename T>
 void DoublyLinkedList<T>::remove_indexbased(const std::uint32_t &index)
 {
     DoublyLinkedListItem<T> *current_item{_first_item};
+    // go to the requested element
     for (std::uint32_t i{}; current_item && i < index; ++i)
         current_item = current_item->next;
+    // remove element if not nullptr
     if (current_item)
-    {
-        if (!current_item->next && !current_item->prev)
-        {
-            delete current_item;
-            _first_item = nullptr;
-            _last_item = nullptr;
-        }
-        else if (!current_item->next)
-        {
-            current_item->prev->next = nullptr;
-            _last_item = current_item->prev;
-            delete current_item;
-        }
-        else if (!current_item->prev)
-        {
-            current_item->next->prev = nullptr;
-            _first_item = current_item->next;
-            delete current_item;
-        }
-        else
-        {
-            current_item->prev->next = current_item->next;
-            current_item->next->prev = current_item->prev;
-            delete current_item;
-        }
-        --_count;
-        return;
-    }
+        return _remove(current_item);
     throw std::out_of_range{"Index out of range"};
 }
 
@@ -196,41 +179,13 @@ template <typename T>
 void DoublyLinkedList<T>::remove_valuebased(const T &value)
 {
     DoublyLinkedListItem<T> *current_item{_first_item};
+    // search the element in the list
     while (current_item)
     {
         if (current_item->value == value)
-        {
-            if (!current_item->next && !current_item->prev)
-            {
-                delete current_item;
-                _first_item = nullptr;
-                _last_item = nullptr;
-            }
-            else if (!current_item->next)
-            {
-                current_item->prev->next = nullptr;
-                _last_item = current_item->prev;
-                delete current_item;
-            }
-            else if (!current_item->prev)
-            {
-                current_item->next->prev = nullptr;
-                _first_item = current_item->next;
-                delete current_item;
-            }
-            else
-            {
-                current_item->prev->next = current_item->next;
-                current_item->next->prev = current_item->prev;
-                delete current_item;
-            }
-            --_count;
-            return;
-        }
+            return _remove(current_item);
         else
-        {
             current_item = current_item->next;
-        }
     }
     throw std::out_of_range{"Index out of range"};
 }
@@ -253,8 +208,10 @@ template <typename T>
 T &DoublyLinkedList<T>::operator[](const std::uint32_t &index)
 {
     DoublyLinkedListItem<T> *current_item{_first_item};
+    // go to the requested element
     for (std::uint32_t i{}; current_item && i < index; ++i)
         current_item = current_item->next;
+    // return element if not nullptr
     if (current_item)
         return current_item->value;
     throw std::out_of_range{"Index out of range"};
@@ -264,8 +221,10 @@ template <typename T>
 const T &DoublyLinkedList<T>::operator[](const std::uint32_t &index) const
 {
     DoublyLinkedListItem<T> *current_item{_first_item};
+    // go to the requested element
     for (std::uint32_t i{}; current_item && i < index; ++i)
         current_item = current_item->next;
+    // return element if not nullptr
     if (current_item)
         return current_item->value;
     throw std::out_of_range{"Index out of range"};
@@ -284,6 +243,40 @@ template <typename T>
 const std::uint32_t &DoublyLinkedList<T>::length() const
 {
     return _count;
+}
+
+template <typename T>
+void DoublyLinkedList<T>::_remove(DoublyLinkedListItem<T> *item)
+{
+    --_count;
+    // only one element in the list
+    if (!item->next && !item->prev)
+    {
+        delete item;
+        _first_item = nullptr;
+        _last_item = nullptr;
+    }
+    // removing the last element
+    else if (!item->next)
+    {
+        item->prev->next = nullptr;
+        _last_item = item->prev;
+        delete item;
+    }
+    // removing the first element
+    else if (!item->prev)
+    {
+        item->next->prev = nullptr;
+        _first_item = item->next;
+        delete item;
+    }
+    // removing a generic element
+    else
+    {
+        item->prev->next = item->next;
+        item->next->prev = item->prev;
+        delete item;
+    }
 }
 
 /********************************************************************/
