@@ -17,37 +17,112 @@
 
 /********************************************************************/
 
+/**
+ * @brief Doubly linked list item, to store the value and the pointers
+ * the the next and the previous item.
+ *
+ * @tparam T type of the value stored in the list
+ */
 template <typename T>
 struct DoublyLinkedListItem
 {
     T value;
-    DoublyLinkedListItem *prev;
-    DoublyLinkedListItem *next;
+    DoublyLinkedListItem<T> *prev;
+    DoublyLinkedListItem<T> *next;
 };
 
 /********************************************************************/
 
+/**
+ * @brief A simple doubly linked list.
+ *
+ * @tparam T type of the value stored in the list
+ */
 template <typename T>
 class DoublyLinkedList
 {
 public:
+    /**
+     * @brief Construct a new DoublyLinkedList object.
+     */
     DoublyLinkedList();
+
+    /**
+     * @brief Destroy the DoublyLinkedList object.
+     */
     ~DoublyLinkedList();
 
+    /**
+     * @brief Appends the given element value to the end of the list.
+     *
+     * @param value the value of the element to append
+     */
     void append(const T &value);
+
+    /**
+     * @brief Remove the element at the specified index from the list.
+     *
+     * @param index the index of the element to remove
+     */
     void remove_indexbased(const std::uint32_t &index);
+
+    /**
+     * @brief Remove the first element of the given value from the list.
+     *
+     * @param value the value of the element to remove
+     */
     void remove_valuebased(const T &value);
+
+    /**
+     * @brief Erases all elements from the list.
+     */
     void clear();
 
+    /**
+     * @brief Access or modify the specified element; no insertion.
+     *
+     * @param index the index of the element to find
+     * @return the value of the element at the given index
+     */
     T &operator[](const std::uint32_t &index);
+
+    /**
+     * @brief Access or modify the specified element; no insertion.
+     *
+     * @param index the index of the element to find
+     * @return the value of the element at the given index
+     */
     const T &operator[](const std::uint32_t &index) const;
+
+    /**
+     * @brief Checks if the list contains the specified element.
+     *
+     * @param value value of the element to search for
+     * @return `true` if there is such an element, otherwise `false`
+     */
     bool contains(const T &value) const;
 
+    /**
+     * @brief Get the number of elements in the list.
+     *
+     * @return the length of the list
+     */
     const std::uint32_t &length() const;
 
 private:
+    /**
+     * @brief Pointer to the first element of the list.
+     */
     DoublyLinkedListItem<T> *_first_item;
+
+    /**
+     * @brief Pointer to the last item of the list.
+     */
     DoublyLinkedListItem<T> *_last_item;
+
+    /**
+     * @brief Number of elements in the list.
+     */
     std::uint32_t _count;
 };
 
