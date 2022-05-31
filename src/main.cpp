@@ -10,6 +10,7 @@
  */
 
 #include <chrono>
+#include <iomanip>
 #include <iostream>
 #include <random>
 #include <thread>
@@ -18,27 +19,58 @@
 
 /********************************************************************/
 
-Bank bank{0, 0.05};
-
-/********************************************************************/
+#define ENABLE_LOG false
 
 template <typename T>
 void log_message(T t)
 {
+#if ENABLE_LOG
     std::clog << t << std::endl;
+#endif
 }
 
 template <typename T, typename... Args>
 void log_message(T t, Args... args)
 {
+#if ENABLE_LOG
     std::clog << t << " ";
     log_message(args...);
+#endif
 }
 
 /********************************************************************/
 
-void handle_accounts(const unsigned int &n_steps, const unsigned int &sleep_ms)
+int main(int argc, char const *argv[])
 {
+    // SETUP VARS
+    std::cout << std::endl;
+    unsigned int n_steps{600}, sleep_ms{50};
+    try
+    {
+        if (argc == 2)
+        {
+            n_steps = std::stoi(argv[1]);
+        }
+        else if (argc == 3)
+        {
+            n_steps = std::stoi(argv[1]);
+            sleep_ms = std::stoi(argv[2]);
+        }
+        else if (argc > 3)
+        {
+            throw std::exception{};
+        }
+    }
+    catch(const std::exception& e)
+    {
+        std::cerr << "Command line parameter error." << std::endl;
+        std::cerr << "Usage: " << argv[0] << " [n_steps] [sleep_ms]" << std::endl;
+        return 1;
+    }
+
+    // SETUP BANK
+    Bank bank{0, 0.001};
+
     // SETUP RANDOM NUMBER GENERATOR
     std::mt19937_64 rng{};
     rng.seed(1);
@@ -70,7 +102,7 @@ void handle_accounts(const unsigned int &n_steps, const unsigned int &sleep_ms)
             return static_cast<std::uint64_t>(_budget_generator(rng));
         }};
     // loan budget generator (exponential distribution)
-    std::exponential_distribution<double> _loan_budget_generator{0.00001};
+    std::exponential_distribution<double> _loan_budget_generator{0.00002};
     auto loan_budget_generator{
         [&](std::mt19937_64 rng)
         {
@@ -87,6 +119,7 @@ void handle_accounts(const unsigned int &n_steps, const unsigned int &sleep_ms)
     // START LOOP
     int l_a{}, l_r{}, o_a{}, o_r{};
     log_message("[handle_accounts]", "Starting loop");
+    std::cerr << std::setw(5) << "EPOCHS" << std::setw(15) << "BANK BUDGET" << std::setw(17) << "LOAN accepted" << std::setw(17) << "LOAN rejected" << std::setw(17) << "OPS accepted" << std::setw(17) << "OPS rejected" << std::endl;
     for (unsigned int i{1}; i <= n_steps; ++i)
     {
         log_message("\n[handle_accounts]", "[", i, "] Starting epoch", i, "with bank budget", bank.get_bank_budget());
@@ -136,9 +169,12 @@ void handle_accounts(const unsigned int &n_steps, const unsigned int &sleep_ms)
                 }
                 case RequestType::Loan:
                 {
-                    const auto budget{loan_budget_generator(rng)};
-                    bank.request(key, RequestType::Loan, budget);
-                    log_message("[handle_accounts]", "[", i, "]", "Operation requested: loan with key", key, "and budget", budget);
+                    if (rand_uniform(rng) < 0.5)
+                    {
+                        const auto budget{loan_budget_generator(rng)};
+                        bank.request(key, RequestType::Loan, budget);
+                        log_message("[handle_accounts]", "[", i, "]", "Operation requested: loan with key", key, "and budget", budget);
+                    }
                     break;
                 }
                 }
@@ -158,21 +194,16 @@ void handle_accounts(const unsigned int &n_steps, const unsigned int &sleep_ms)
             log_message("[handle_accounts]", "[", i, "]", "RESULT: operations", result ? "accepted" : "rejected");
             ++(result ? o_a : o_r);
         }
+        bank.update_interests();
 
         // END (AND SLEEP)
+        std::cerr << std::setw(5) << i << std::setw(15) << bank.get_bank_budget() << std::setw(17) << l_a << std::setw(17) << l_r << std::setw(17) << o_a << std::setw(17) << o_r << std::setw(17) << "\r";
         if (sleep_ms)
             std::this_thread::sleep_for(std::chrono::milliseconds{sleep_ms});
     }
 
+    std::cout << std::endl;
     log_message("\nFINAL: loans (a r)", l_a, l_r, "| operations (a r)", o_a, o_r);
-}
-
-/********************************************************************/
-
-int main(int argc, char const *argv[])
-{
-    std::thread thread_handle_accounts{handle_accounts, 1000, 0};
-    thread_handle_accounts.join();
 
     return 0;
 }
