@@ -19,6 +19,9 @@
 
 /********************************************************************/
 
+/**
+ * @brief Type of the required action to the bank.
+ */
 enum class RequestType
 {
     OpenAccount,
@@ -31,71 +34,261 @@ enum class RequestType
 
 /********************************************************************/
 
-class Loan
+/**
+ * @brief NewLoan class, to store all the informations about a loan request.
+ */
+class NewLoan
 {
 public:
-    Loan(const std::uint32_t &key, const std::uint64_t &loan_budget = 0) : key{key},
-                                                                           loan_budget{loan_budget} {};
-    bool operator==(const Loan &a) const { return key == a.key; };
+    /**
+     * @brief Construct a new NewLoan object.
+     *
+     * @param key Key of the account that require a loan.
+     * @param loan_budget Value of the requested loan.
+     */
+    NewLoan(const std::uint32_t &key, const std::uint64_t &loan_budget = 0) : key{key},
+                                                                              loan_budget{loan_budget} {};
 
+    /**
+     * @brief Destroy the NewLoan object.
+     */
+    ~NewLoan(){};
+
+    /**
+     * @brief Compare two NewLoan objects.
+     *
+     * @param a The second object.
+     * @return `true` if the key is equal, `false` otherwise.
+     */
+    bool operator==(const NewLoan &a) const { return key == a.key; };
+
+    /**
+     * @brief Key of the account that require a loan.
+     */
     std::uint32_t key;
+
+    /**
+     * @brief Value of the requested loan.
+     */
     std::uint64_t loan_budget;
 };
 
 /********************************************************************/
 
+/**
+ * @brief NewOperation class, to store all the informations about an operation request.
+ *
+ */
 class NewOperation
 {
 public:
+    /**
+     * @brief Construct a new NewOperation object.
+     *
+     * @param key Key of the account that requested an operation.
+     * @param new_request_type Type of the requested operation.
+     * @param new_request_budget Budget of the requested operation.
+     */
     NewOperation(const std::uint32_t &key, const RequestType &new_request_type = RequestType::None,
                  const std::uint64_t &new_request_budget = 0) : key{key},
                                                                 new_request_type{new_request_type},
                                                                 new_request_budget{new_request_budget} {};
+
+    /**
+     * @brief Destroy the NewOperation object.
+     */
+    ~NewOperation(){};
+
+    /**
+     * @brief Compare two NewOperation objects.
+     *
+     * @param a The second object.
+     * @return `true` if the key is equal, `false` otherwise.
+     */
     bool operator==(const NewOperation &a) const { return key == a.key; };
 
+    /**
+     * @brief Key of the account that requested an operation.
+     */
     std::uint32_t key;
+
+    /**
+     * @brief Type of the requested operation.
+     */
     RequestType new_request_type;
+
+    /**
+     * @brief Budget of the requested operation.
+     */
     std::uint64_t new_request_budget;
 };
 
 /********************************************************************/
 
+/**
+ * @brief
+ *
+ */
 class Bank
 {
 public:
-    Bank(const std::uint64_t &initial_bank_budget, const double &loan_interest = 0.1);
+    /**
+     * @brief Construct a new Bank object.
+     *
+     * @param initial_bank_budget Initial bank budget.
+     * @param loan_interest Loan interest factor (in favor of the bank).
+     * @param deposit_interest Deposit interest factor (in favor of the depositors).
+     */
+    Bank(const std::uint64_t &initial_bank_budget, const double &loan_interest = 0.1, const double &deposit_interest = 0.005);
+
+    /**
+     * @brief Destroy the Bank object.
+     */
     ~Bank();
 
+    /**
+     * @brief Request a new action to the bank.
+     *
+     * @param key Key of the account that requested an action.
+     * @param request_type Type of the requested action.
+     * @param request_budget Budget of the requested action.
+     */
     void request(const std::uint32_t &key, const RequestType &request_type, const std::uint64_t &request_budget = 0);
+
+    /**
+     * @brief Check if an account has any pending loan or operation.
+     *
+     * @param key Key of the account to check.
+     * @return `true` if the account has any pending action, `false` otherwise.
+     */
     bool pending_request(const std::uint32_t &key) const;
+
+    /**
+     * @brief Check for any pending loan.
+     *
+     * @return `true` if there is at least a pending loan, `false` otherwise.
+     */
     bool pending_loans() const;
+
+    /**
+     * @brief Check for any pending operation.
+     *
+     * @return `true` if there is at least a pending operation, `false` otherwise.
+     */
     bool pending_operations() const;
+
+    /**
+     * @brief Check if required loans are safe and, if yes, dispense them.
+     *
+     * @return `true` if all the loans are dispensed, `false` otherwise.
+     */
     bool update_accounts_loans();
+
+    /**
+     * @brief Check if required operations are safe and, if yes, dispense them.
+     *
+     * @return `true` if all the operations are dispensed, `false` otherwise.
+     */
     bool update_accounts_operations();
 
+    /**
+     * @brief Update accounts budget by adding the due interests.
+     */
+    void update_interests();
+
+    /**
+     * @brief Get the current bank budget.
+     *
+     * @return The current bank budget.
+     */
     const std::uint64_t &get_bank_budget() const;
+
+    /**
+     * @brief Get the budget of the given account.
+     *
+     * @param key The key of the account to find.
+     * @return The budget of the given account.
+     */
     const std::uint64_t &get_account_budget(const std::uint32_t &key) const;
+
+    /**
+     * @brief Get the accounts budget table.
+     *
+     * @return The accounts budget table.
+     */
     const HashTable<std::uint64_t> &get_accounts() const;
+
+    /**
+     * @brief Check if an account with the given key exist in the bank.
+     *
+     * @param key The key of the account to find.
+     * @return `true` if there is such an element, otherwise `false`.
+     */
     bool exist(const std::uint32_t &key) const;
 
+    /**
+     * @brief Get the number of accounts in the bank.
+     *
+     * @return The number of accounts.
+     */
     const std::uint32_t &n_accounts() const;
 
 private:
+    /**
+     * @brief Check if all new requested loans are safe.
+     *
+     * @return `true` if safe, otherwise `false`.
+     */
     bool _are_safe_loans() const;
+
+    /**
+     * @brief Check if all new requested operations are safe.
+     *
+     * @return `true` if safe, otherwise `false`.
+     */
     bool _are_safe_operations() const;
 
+    /**
+     * @brief Bank budget for all operations.
+     */
     std::uint64_t _bank_budget;
+
+    /**
+     * @brief Loan interest factor (in favor of the bank).
+     */
     double _loan_interest;
 
+    /**
+     * @brief Deposit interest factor (in favor of the depositors).
+     */
+    double _deposit_interest;
+
+    /**
+     * @brief Table of the accounts budgets.
+     */
     HashTable<std::uint64_t> _accounts_budget;
-    DoublyLinkedList<Loan> _new_loans;
+
+    /**
+     * @brief List of new loan requests.
+     */
+    DoublyLinkedList<NewLoan> _new_loans;
+
+    /**
+     * @brief List of new operations requests.
+     */
     DoublyLinkedList<NewOperation> _new_operations;
 };
 
-Bank::Bank(const std::uint64_t &initial_bank_budget, const double &loan_interest) : _bank_budget{initial_bank_budget}, _loan_interest{loan_interest}
+Bank::Bank(const std::uint64_t &initial_bank_budget, const double &loan_interest,
+           const double &deposit_interest) : _bank_budget{initial_bank_budget},
+                                             _loan_interest{loan_interest},
+                                             _deposit_interest{deposit_interest}
 {
+    // check if all arguments are valid
     if (_loan_interest < 0)
-        throw std::runtime_error{"loan_interest must be >= 0"};
+        throw std::invalid_argument{"loan_interest must be >= 0"};
+    if (_deposit_interest < 0)
+        throw std::invalid_argument{"_deposit_interest must be >= 0"};
 }
 
 Bank::~Bank()
@@ -141,13 +334,13 @@ bool Bank::pending_operations() const
 
 bool Bank::update_accounts_loans()
 {
-    // no pending operations
+    // check if pending operations
     if (!_new_loans.length())
         return true;
-
+    // if yes, execute
     auto is_safe{_are_safe_loans()};
     if (is_safe)
-        for (int i{}; i < _new_loans.length(); ++i)
+        for (std::uint32_t i{}; i < _new_loans.length(); ++i)
             _bank_budget += (_new_loans[i].loan_budget * _loan_interest);
     _new_loans.clear();
     return is_safe;
@@ -155,14 +348,14 @@ bool Bank::update_accounts_loans()
 
 bool Bank::update_accounts_operations()
 {
-    // no pending operations
+    // check if pending operations
     if (!_new_operations.length())
         return true;
-
+    // if yes, execute
     auto is_safe{_are_safe_operations()};
     if (is_safe)
     {
-        for (int i{}; i < _new_operations.length(); ++i)
+        for (std::uint32_t i{}; i < _new_operations.length(); ++i)
         {
             _bank_budget -= _new_operations[i].new_request_budget;
             switch (_new_operations[i].new_request_type)
@@ -178,6 +371,12 @@ bool Bank::update_accounts_operations()
     }
     _new_operations.clear();
     return is_safe;
+}
+
+void Bank::update_interests()
+{
+    for (std::uint32_t i{}; i < _accounts_budget.length(); ++i)
+        _accounts_budget[_accounts_budget.keys()[i]] *= (1 + _deposit_interest);
 }
 
 const std::uint64_t &Bank::get_bank_budget() const
