@@ -36,6 +36,12 @@ public:
      */
     HashTableItem(const std::uint32_t &key, const T &value = {}) : key{key},
                                                                    value{value} {};
+
+    /**
+     * @brief Destroy the HashTable Item object.
+     */
+    ~HashTableItem(){};
+
     /**
      * @brief Compare two HashTableItem objects.
      *
