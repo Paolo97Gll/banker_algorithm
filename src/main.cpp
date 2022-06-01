@@ -61,7 +61,7 @@ int main(int argc, char const *argv[])
             throw std::exception{};
         }
     }
-    catch(const std::exception& e)
+    catch (const std::exception &e)
     {
         std::cerr << "Command line parameter error." << std::endl;
         std::cerr << "Usage: " << argv[0] << " [n_steps] [sleep_ms]" << std::endl;
