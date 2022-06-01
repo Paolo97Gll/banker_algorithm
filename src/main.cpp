@@ -69,7 +69,7 @@ int main(int argc, char const *argv[])
     }
 
     // SETUP BANK
-    Bank bank{0, 0.001};
+    Bank bank{0, 0.01};
 
     // SETUP RANDOM NUMBER GENERATOR
     std::mt19937_64 rng{};
@@ -102,7 +102,7 @@ int main(int argc, char const *argv[])
             return static_cast<std::uint64_t>(_budget_generator(rng));
         }};
     // loan budget generator (exponential distribution)
-    std::exponential_distribution<double> _loan_budget_generator{0.00002};
+    std::exponential_distribution<double> _loan_budget_generator{0.00004};
     auto loan_budget_generator{
         [&](std::mt19937_64 rng)
         {
@@ -119,10 +119,21 @@ int main(int argc, char const *argv[])
     // START LOOP
     int l_a{}, l_r{}, o_a{}, o_r{};
     log_message("[handle_accounts]", "Starting loop");
+#if !ENABLE_LOG
     std::cerr << std::setw(5) << "EPOCHS" << std::setw(15) << "BANK BUDGET" << std::setw(17) << "LOAN accepted" << std::setw(17) << "LOAN rejected" << std::setw(17) << "OPS accepted" << std::setw(17) << "OPS rejected" << std::endl;
+#endif
     for (unsigned int i{1}; i <= n_steps; ++i)
     {
         log_message("\n[handle_accounts]", "[", i, "] Starting epoch", i, "with bank budget", bank.get_bank_budget());
+
+        // REMOVE AN EXISTING ACCOUNT
+        if (bank.n_accounts() > 0 && rand_uniform(rng) < 0.05)
+        {
+            const auto key{bank.get_accounts().keys()[remove_account_key_generator(rng)]};
+            const auto budget{bank.get_account_budget(key)};
+            bank.request(key, RequestType::CloseAccount, budget);
+            log_message("[handle_accounts]", "[", i, "]", "Operation requested: remove account with key", key, "and budget", budget);
+        }
 
         // GENERATE A NEW ACCOUNT
         if (rand_uniform(rng) < 0.15)
@@ -134,15 +145,6 @@ int main(int argc, char const *argv[])
             const auto budget{budget_generator(rng)};
             bank.request(key, RequestType::OpenAccount, budget);
             log_message("[handle_accounts]", "[", i, "]", "Operation requested: new account with key", key, "and budget", budget);
-        }
-
-        // REMOVE AN EXISTING ACCOUNT
-        if (bank.n_accounts() > 0 && rand_uniform(rng) < 0.1)
-        {
-            const auto key{bank.get_accounts().keys()[remove_account_key_generator(rng)]};
-            const auto budget{bank.get_account_budget(key)};
-            bank.request(key, RequestType::CloseAccount, budget);
-            log_message("[handle_accounts]", "[", i, "]", "Operation requested: remove account with key", key, "and budget", budget);
         }
 
         // HANDLE EXISTING ACCOUNTS
@@ -169,12 +171,9 @@ int main(int argc, char const *argv[])
                 }
                 case RequestType::Loan:
                 {
-                    if (rand_uniform(rng) < 0.5)
-                    {
-                        const auto budget{loan_budget_generator(rng)};
-                        bank.request(key, RequestType::Loan, budget);
-                        log_message("[handle_accounts]", "[", i, "]", "Operation requested: loan with key", key, "and budget", budget);
-                    }
+                    const auto budget{loan_budget_generator(rng)};
+                    bank.request(key, RequestType::Loan, budget);
+                    log_message("[handle_accounts]", "[", i, "]", "Operation requested: loan with key", key, "and budget", budget);
                     break;
                 }
                 }
@@ -197,12 +196,16 @@ int main(int argc, char const *argv[])
         bank.update_interests();
 
         // END (AND SLEEP)
+#if !ENABLE_LOG
         std::cerr << std::setw(5) << i << std::setw(15) << bank.get_bank_budget() << std::setw(17) << l_a << std::setw(17) << l_r << std::setw(17) << o_a << std::setw(17) << o_r << std::setw(17) << "\r";
+#endif
         if (sleep_ms)
             std::this_thread::sleep_for(std::chrono::milliseconds{sleep_ms});
     }
 
+#if !ENABLE_LOG
     std::cout << std::endl;
+#endif
     log_message("\nFINAL: loans (a r)", l_a, l_r, "| operations (a r)", o_a, o_r);
 
     return 0;
