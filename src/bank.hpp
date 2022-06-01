@@ -421,7 +421,7 @@ bool Bank::_are_safe_loans() const
     // while all loans are not dispensed or system is not in safe state
     std::uint32_t count{};
     bool is_safe{true};
-    while (count < _new_loans.length())
+    while (count < _new_loans.length() && is_safe)
     {
         // find a loan which is not dispensed and whose needs can be satisfied with current budget
         bool found{false};
@@ -442,7 +442,6 @@ bool Bank::_are_safe_loans() const
         if (!found)
         {
             is_safe = false;
-            break;
         }
     }
 
